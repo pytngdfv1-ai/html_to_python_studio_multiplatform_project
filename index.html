@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML to Python Studio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CSS (Íconos 100% seguros sin JavaScript/ESM) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- JSZip CDN para descargar paquetes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2.5 rounded-lg text-white flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-layer-group text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+                    HTML to Python Studio 
+                    <span class="text-xs bg-indigo-900/80 text-indigo-300 border border-indigo-700 px-2 py-0.5 rounded-full font-normal">Android .APK + Windows .EXE</span>
+                </h1>
+                <p class="text-xs text-slate-400">Convierte proyectos Web a ejecutables nativos para Android y Windows</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="btnDownloadZip" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-lg hover:shadow-emerald-900/40">
+                <i class="fa-solid fa-download"></i>
+                <span>Descargar Proyecto Multiplataforma (.zip)</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-800/50 border-r border-slate-700 p-4 flex flex-col justify-between">
+            <nav class="space-y-1">
+                <button onclick="switchTab('htmlTab')" id="nav-htmlTab" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-indigo-600 text-white transition">
+                    <i class="fa-solid fa-code w-4 text-center"></i>
+                    <span>1. Código HTML/JS</span>
+                </button>
+                <button onclick="switchTab('configTab')" id="nav-configTab" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-gear w-4 text-center"></i>
+                    <span>2. Configurar App</span>
+                </button>
+                <button onclick="switchTab('pythonTab')" id="nav-pythonTab" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-file-code w-4 text-center"></i>
+                    <span>3. Código Python & Specs</span>
+                </button>
+                <button onclick="switchTab('apkTab')" id="nav-apkTab" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-microchip w-4 text-center"></i>
+                    <span>4. Compilar APK y EXE</span>
+                </button>
+            </nav>
+
+            <div class="bg-slate-800 border border-slate-700 p-3 rounded-lg text-xs text-slate-400 space-y-2">
+                <div class="flex items-center space-x-2 text-indigo-400 font-semibold">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Multiplataforma Nativa</span>
+                </div>
+                <p>Genera un script universal en Python que detecta si está corriendo en <b>Android</b> (usando Kivy) o en <b>Windows</b> (usando PyWebView). ¡Obtén tu <b>.APK</b> y <b>.EXE</b> automáticamente!</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 bg-slate-900 overflow-y-auto p-6">
+            
+            <!-- Tab 1: HTML Input & Live Preview -->
+            <div id="htmlTab" class="tab-content space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-white">Ingresa tu Aplicación Web</h2>
+                        <p class="text-sm text-slate-400">Pega tu código HTML/CSS/JS o sube tu archivo `index.html`</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <!-- Preview Device Toggle -->
+                        <div class="bg-slate-800 border border-slate-700 rounded-lg p-1 flex space-x-1 text-xs">
+                            <button id="btnDeviceMobile" onclick="setPreviewDevice('mobile')" class="px-2.5 py-1 rounded bg-indigo-600 text-white font-medium flex items-center space-x-1 transition">
+                                <i class="fa-solid fa-mobile-screen"></i>
+                                <span>Móvil (Android)</span>
+                            </button>
+                            <button id="btnDeviceDesktop" onclick="setPreviewDevice('desktop')" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition">
+                                <i class="fa-solid fa-desktop"></i>
+                                <span>Escritorio (Windows)</span>
+                            </button>
+                        </div>
+
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-1.5 rounded-md text-xs font-medium text-slate-200 flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Cargar index.html</span>
+                            <input type="file" id="htmlFileInput" accept=".html,.txt" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
+                    <!-- Editor -->
+                    <div class="flex flex-col border border-slate-700 rounded-lg overflow-hidden bg-slate-950 shadow-inner">
+                        <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 text-xs text-slate-400 flex justify-between items-center">
+                            <span>index.html</span>
+                            <span class="text-emerald-400 text-[10px] bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded">Editable</span>
+                        </div>
+                        <textarea id="htmlCodeInput" class="flex-1 bg-transparent p-4 font-mono text-xs text-slate-200 resize-none focus:outline-none" placeholder="<!-- Pega tu código HTML aquí -->"></textarea>
+                    </div>
+
+                    <!-- Live Preview Frame Container -->
+                    <div class="flex flex-col items-center justify-center bg-slate-950/50 border border-slate-800 rounded-lg p-4 transition-all duration-300">
+                        <div class="text-xs text-slate-400 mb-2 flex items-center space-x-2">
+                            <i class="fa-solid fa-eye"></i>
+                            <span id="previewLabel">Vista Previa - Android Móvil</span>
+                        </div>
+                        
+                        <!-- Mobile Mockup -->
+                        <div id="frameMobile" class="w-[300px] h-[550px] bg-black rounded-[40px] border-4 border-slate-700 p-3 shadow-2xl relative flex flex-col transition-all">
+                            <div class="w-32 h-4 bg-slate-700 rounded-b-xl mx-auto mb-2 z-10"></div>
+                            <div class="flex-1 bg-white rounded-[24px] overflow-hidden relative">
+                                <iframe id="htmlPreviewMobile" class="w-full h-full border-0"></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Desktop Mockup -->
+                        <div id="frameDesktop" class="hidden w-full max-w-xl h-[400px] bg-slate-800 rounded-xl border-2 border-slate-600 shadow-2xl flex flex-col overflow-hidden transition-all">
+                            <!-- Windows Title Bar -->
+                            <div class="bg-slate-700 px-3 py-1.5 flex items-center justify-between border-b border-slate-600 text-xs text-slate-300">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-desktop text-indigo-400"></i>
+                                    <span id="desktopWindowTitle" class="font-medium text-[11px]">Mi App HTML - Windows Executable</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-2.5 h-2.5 bg-amber-500 rounded-full cursor-pointer"></span>
+                                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full cursor-pointer"></span>
+                                    <span class="w-2.5 h-2.5 bg-rose-500 rounded-full cursor-pointer"></span>
+                                </div>
+                            </div>
+                            <div class="flex-1 bg-white relative">
+                                <iframe id="htmlPreviewDesktop" class="w-full h-full border-0"></iframe>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Config App -->
+            <div id="configTab" class="tab-content hidden space-y-6 max-w-4xl">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Configuración de Compilación (Android & Windows)</h2>
+                    <p class="text-sm text-slate-400">Personaliza los parámetros del paquete para generar tu archivo APK e instalador/ejecutable EXE</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Android Config -->
+                    <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
+                        <h3 class="text-sm font-semibold text-indigo-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                            <span>Ajustes Generales y Android</span>
+                        </h3>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-medium text-slate-300">Nombre de la Aplicación</label>
+                                <span id="titleDetectedBadge" class="hidden text-[10px] bg-indigo-900/80 text-indigo-300 border border-indigo-700 px-1.5 py-0.5 rounded font-mono">Auto-detectado de &lt;title&gt;</span>
+                            </div>
+                            <input type="text" id="appName" value="Mi App Multiplataforma" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-medium text-slate-300">ID Único de Paquete (Android)</label>
+                                <button type="button" id="btnResetPackageSync" class="text-[10px] text-indigo-400 hover:underline hover:text-indigo-300">Re-sincronizar</button>
+                            </div>
+                            <input type="text" id="packageName" value="org.miejemplo.miappmultiplataforma" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Versión</label>
+                                <input type="text" id="appVersion" value="1.0.0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Orientación Android</label>
+                                <select id="appOrientation" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                                    <option value="portrait">Vertical (Portrait)</option>
+                                    <option value="landscape">Horizontal (Landscape)</option>
+                                    <option value="sensor">Adaptable (Sensor)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Permisos Requeridos (Android)</label>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                                <label class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded border border-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="permInternet" checked class="rounded text-indigo-600 focus:ring-0">
+                                    <span>INTERNET</span>
+                                </label>
+                                <label class="flex items-center space-x-2 bg-slate-900/60 p-2 rounded border border-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="permStorage" checked class="rounded text-indigo-600 focus:ring-0">
+                                    <span>STORAGE</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Windows Executable Config -->
+                    <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
+                        <h3 class="text-sm font-semibold text-sky-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-desktop"></i>
+                            <span>Ventana de Windows (.EXE)</span>
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Ancho Ventana (px)</label>
+                                <input type="number" id="winWidth" value="1024" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Alto Ventana (px)</label>
+                                <input type="number" id="winHeight" value="720" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-xs text-slate-300 pt-2">
+                            <label class="flex items-center space-x-2 bg-slate-900/60 p-2.5 rounded border border-slate-700 cursor-pointer">
+                                <input type="checkbox" id="winResizable" checked class="rounded text-indigo-600 focus:ring-0">
+                                <span>Permitir redimensionar ventana en Windows</span>
+                            </label>
+
+                            <label class="flex items-center space-x-2 bg-slate-900/60 p-2.5 rounded border border-slate-700 cursor-pointer">
+                                <input type="checkbox" id="winFullscreen" class="rounded text-indigo-600 focus:ring-0">
+                                <span>Iniciar en Pantalla Completa (Fullscreen)</span>
+                            </label>
+                        </div>
+
+                        <!-- Storage & Backup Info -->
+                        <div class="bg-indigo-950/40 border border-indigo-800/60 p-3 rounded-lg space-y-2 mt-4">
+                            <label class="flex items-center space-x-2 text-xs font-semibold text-indigo-300 cursor-pointer">
+                                <input type="checkbox" id="enableLocalStorage" checked class="rounded text-indigo-600 focus:ring-0">
+                                <span>Guardado Local y Respaldos (Móvil / PC)</span>
+                            </label>
+                            <p class="text-[11px] text-slate-400 pl-6">
+                                Captura descargas de archivos JSON, CSV o respaldos de la app y los guarda en la carpeta <b>Descargas</b> de Android o en el disco local de Windows.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Generated Python & Specs -->
+            <div id="pythonTab" class="tab-content hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-white">Archivos del Proyecto Generados</h2>
+                        <p class="text-sm text-slate-400">Verifica los archivos fuente de tu app antes de compilar</p>
+                    </div>
+
+                    <!-- File Selector Buttons -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="showCodeView('mainPy')" id="btnView-mainPy" class="code-view-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-md font-medium">main.py</button>
+                        <button onclick="showCodeView('launcherBat')" id="btnView-launcherBat" class="code-view-btn bg-slate-800 text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-md font-medium">ejecutar_app.bat</button>
+                        <button onclick="showCodeView('winBat')" id="btnView-winBat" class="code-view-btn bg-slate-800 text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-md font-medium">compilar_windows.bat</button>
+                        <button onclick="showCodeView('buildozerSpec')" id="btnView-buildozerSpec" class="code-view-btn bg-slate-800 text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-md font-medium">buildozer.spec (Android)</button>
+                        <button onclick="showCodeView('pyinstallerSpec')" id="btnView-pyinstallerSpec" class="code-view-btn bg-slate-800 text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-md font-medium">build_win.spec (Windows)</button>
+                    </div>
+                </div>
+
+                <div class="h-[calc(100vh-12rem)] flex flex-col border border-slate-700 rounded-lg overflow-hidden bg-slate-950">
+                    <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 text-xs text-slate-300 font-mono flex justify-between items-center">
+                        <span id="currentFileName">main.py</span>
+                        <button onclick="copyCurrentCode()" class="hover:text-indigo-400 flex items-center space-x-1">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Copiar Código</span>
+                        </button>
+                    </div>
+
+                    <pre id="codeDisplayArea" class="flex-1 p-4 font-mono text-xs text-indigo-300 overflow-auto whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+
+            <!-- Tab 4: Build Methods -->
+            <div id="apkTab" class="tab-content hidden space-y-6 max-w-4xl">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Métodos para Compilar .APK y .EXE</h2>
+                    <p class="text-sm text-slate-400">Selecciona el procedimiento que prefieras para empaquetar tu aplicación</p>
+                </div>
+
+                <!-- Method Switcher Buttons -->
+                <div class="flex flex-wrap gap-2 border-b border-slate-700 pb-3">
+                    <button onclick="showBuildMethod('method-actions')" id="btn-method-actions" class="build-method-btn px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">
+                        GitHub Actions (Android + Windows Automático)
+                    </button>
+                    <button onclick="showBuildMethod('method-windows-local')" id="btn-method-windows-local" class="build-method-btn px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:bg-slate-700 transition">
+                        Windows Local 1-Clic (.BAT Automático)
+                    </button>
+                    <button onclick="showBuildMethod('method-wsl')" id="btn-method-wsl" class="build-method-btn px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:bg-slate-700 transition">
+                        Android Local (WSL / Linux)
+                    </button>
+                </div>
+
+                <!-- Method 1: GitHub Actions (Supports Both APK and EXE) -->
+                <div id="method-actions" class="method-panel space-y-4">
+                    <div class="bg-indigo-950/40 border border-indigo-800/60 p-4 rounded-xl text-xs space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-indigo-600 text-white font-bold px-2 py-0.5 rounded text-[10px]">¡Generación Simultánea de APK y EXE!</span>
+                            <span class="text-xs text-indigo-300 font-mono">100% Automático y Gratuito</span>
+                        </div>
+                        <h3 class="font-semibold text-white text-sm">Compilación Multiplataforma en GitHub Actions:</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-1">
+                                <span class="text-indigo-400 font-bold text-xs">1. Descargar .ZIP</span>
+                                <p class="text-[11px] text-slate-300">Presiona arriba en <b>"Descargar Proyecto Multiplataforma (.zip)"</b>. Incluye el script en `.github/workflows/build.yml`.</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-1">
+                                <span class="text-indigo-400 font-bold text-xs">2. Subir a GitHub</span>
+                                <p class="text-[11px] text-slate-300">Descomprime el archivo `.zip` y súbelo a un repositorio público o privado en tu cuenta de GitHub.</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-1">
+                                <span class="text-indigo-400 font-bold text-xs">3. Obtener APK y EXE</span>
+                                <p class="text-[11px] text-slate-300">Ve a la pestaña <b>"Actions"</b> en GitHub. Al terminar la compilación, podrás descargar los instaladores para <b>Android (.APK)</b> y <b>Windows (.EXE)</b>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-300">Flujo de Trabajo Automatizado (`.github/workflows/build.yml`):</span>
+                            <button onclick="copyToClipboard('githubScript')" class="text-xs text-slate-400 hover:text-white bg-slate-800 px-3 py-1 rounded border border-slate-700 flex items-center space-x-1">
+                                <i class="fa-solid fa-copy"></i>
+                                <span>Copiar Workflow</span>
+                            </button>
+                        </div>
+                        <pre id="githubScript" class="font-mono text-xs text-indigo-300 bg-slate-900 p-4 rounded-lg overflow-x-auto"></pre>
+                    </div>
+                </div>
+
+                <!-- Method 2: Local Windows EXE with Automated BAT -->
+                <div id="method-windows-local" class="method-panel hidden space-y-4">
+                    <div class="bg-slate-800/60 border border-slate-700 p-4 rounded-xl text-xs space-y-2">
+                        <h3 class="font-semibold text-white text-sm">Compilación Local Automática en Windows (.EXE) en 1-Clic</h3>
+                        <p class="text-slate-300">El ZIP descargado contiene el script <b>`compilar_windows.bat`</b>. Solo debes hacer doble clic en él para compilar de forma totalmente autónoma.</p>
+                        
+                        <div class="bg-sky-950/50 border border-sky-800 p-3 rounded-lg text-slate-300 text-[11px] space-y-1">
+                            <p class="font-semibold text-sky-300">¿Qué hace el archivo compilar_windows.bat?</p>
+                            <ul class="list-disc list-inside space-y-0.5 text-slate-300">
+                                <li>Trabaja de forma independiente en la carpeta donde esté ubicado (`cd /d "%~dp0"`).</li>
+                                <li>Verifica si Python está instalado en tu sistema.</li>
+                                <li>Detecta e instala automáticamente `pyinstaller`, `pywebview` y `pythonnet` si faltan.</li>
+                                <li>Detecta automáticamente si incluyes una imagen de ícono (`icon.ico` o similar) y se la asigna al ejecutable.</li>
+                                <li>Si la compilación falla, mantiene la consola abierta con los errores detallados sin cerrarse.</li>
+                                <li>Si finaliza con éxito, muestra la ruta del `.exe` generado en `/dist/` y se cierra automáticamente.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-slate-300">Código del Ejecutable `compilar_windows.bat`:</span>
+                            <button onclick="copyToClipboard('winBatDisplayArea')" class="text-xs text-slate-400 hover:text-white bg-slate-800 px-3 py-1 rounded border border-slate-700 flex items-center space-x-1">
+                                <i class="fa-solid fa-copy"></i>
+                                <span>Copiar Script .BAT</span>
+                            </button>
+                        </div>
+                        <pre id="winBatDisplayArea" class="font-mono text-xs text-sky-400 bg-slate-900 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Method 3: WSL / Linux for Android -->
+                <div id="method-wsl" class="method-panel hidden space-y-4">
+                    <div class="bg-slate-800/60 border border-slate-700 p-4 rounded-xl text-xs space-y-2">
+                        <h3 class="font-semibold text-white text-sm">Compilación Local de Android en Linux / WSL</h3>
+                        <p class="text-slate-300">Si utilizas Linux o el entorno WSL (Subsistema de Linux para Windows), puedes compilar el APK usando Buildozer.</p>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <pre id="wslScript" class="font-mono text-xs text-emerald-400 bg-slate-900 p-4 rounded-lg overflow-x-auto">
+# 1. Instalar dependencias del sistema
+sudo apt update
+sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+
+# 2. Instalar Buildozer y Cython
+pip3 install --user --upgrade buildozer cython
+
+# 3. Compilar APK
+buildozer -v android debug
+</pre>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Sample Default HTML Code
+        const defaultHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi App Multiplataforma</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            max-width: 380px;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: all 0.2s ease;
+        }
+        button:hover { background: #4f46e5; transform: translateY(-2px); }
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>¡Hola desde Python!</h1>
+        <p>Esta app HTML corre nativamente en <b>Android (.APK)</b> y <b>Windows (.EXE)</b> utilizando Python.</p>
+        <button onclick="alert('¡Funciona correctamente!')">Probar Botón</button>
+    </div>
+</body>
+</html>`;
+
+        // Elements
+        const htmlCodeInput = document.getElementById('htmlCodeInput');
+        const htmlPreviewMobile = document.getElementById('htmlPreviewMobile');
+        const htmlPreviewDesktop = document.getElementById('htmlPreviewDesktop');
+        const codeDisplayArea = document.getElementById('codeDisplayArea');
+        const currentFileName = document.getElementById('currentFileName');
+
+        // Config Inputs
+        const appNameInput = document.getElementById('appName');
+        const packageNameInput = document.getElementById('packageName');
+        const appVersionInput = document.getElementById('appVersion');
+        const appOrientationInput = document.getElementById('appOrientation');
+        const winWidthInput = document.getElementById('winWidth');
+        const winHeightInput = document.getElementById('winHeight');
+        const winResizableInput = document.getElementById('winResizable');
+        const winFullscreenInput = document.getElementById('winFullscreen');
+        const enableLocalStorageInput = document.getElementById('enableLocalStorage');
+        const titleDetectedBadge = document.getElementById('titleDetectedBadge');
+        const btnResetPackageSync = document.getElementById('btnResetPackageSync');
+        const desktopWindowTitle = document.getElementById('desktopWindowTitle');
+
+        // Active State
+        let currentCodeView = 'mainPy'; // mainPy | launcherBat | winBat | buildozerSpec | pyinstallerSpec
+        let activeDevice = 'mobile';
+        let isAppNameUserEdited = false;
+        let isPackageUserEdited = false;
+
+        // Code Storage
+        let generatedPyCode = '';
+        let generatedLauncherBatCode = '';
+        let generatedWinBatCode = '';
+        let generatedBuildozerCode = '';
+        let generatedPyinstallerCode = '';
+        let generatedGithubScript = '';
+
+        function sanitizePackageName(name) {
+            if (!name) return 'org.miejemplo.myapp';
+            const normalized = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            let cleanSlug = normalized.toLowerCase().replace(/[^a-z0-9]/g, '');
+            cleanSlug = cleanSlug.replace(/^[0-9]+/, '');
+            if (!cleanSlug) cleanSlug = 'myapp';
+            return `org.miejemplo.${cleanSlug}`;
+        }
+
+        function extractTitleFromHtml(code) {
+            if (!code) return null;
+            const match = code.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+            if (match && match[1]) {
+                const cleaned = match[1].replace(/<[^>]*>/g, '').trim();
+                return cleaned || null;
+            }
+            return null;
+        }
+
+        function syncAppNameAndPackage(forceFromHtml = false) {
+            const detectedTitle = extractTitleFromHtml(htmlCodeInput.value);
+
+            if (detectedTitle) {
+                if (titleDetectedBadge) titleDetectedBadge.classList.remove('hidden');
+                if (!isAppNameUserEdited || forceFromHtml) {
+                    appNameInput.value = detectedTitle;
+                }
+            } else {
+                if (titleDetectedBadge) titleDetectedBadge.classList.add('hidden');
+            }
+
+            if (!isPackageUserEdited || forceFromHtml) {
+                packageNameInput.value = sanitizePackageName(appNameInput.value);
+            }
+
+            if (desktopWindowTitle) {
+                desktopWindowTitle.textContent = `${appNameInput.value || 'Mi App'} - Windows Executable`;
+            }
+        }
+
+        // Initialize App
+        htmlCodeInput.value = defaultHtml;
+        syncAppNameAndPackage();
+        updatePreview();
+        generateOutputs();
+
+        // Event Listeners
+        htmlCodeInput.addEventListener('input', () => {
+            updatePreview();
+            syncAppNameAndPackage();
+            generateOutputs();
+        });
+
+        appNameInput.addEventListener('input', () => {
+            isAppNameUserEdited = true;
+            if (!isPackageUserEdited) {
+                packageNameInput.value = sanitizePackageName(appNameInput.value);
+            }
+            if (desktopWindowTitle) {
+                desktopWindowTitle.textContent = `${appNameInput.value || 'Mi App'} - Windows Executable`;
+            }
+            generateOutputs();
+        });
+
+        packageNameInput.addEventListener('input', () => {
+            isPackageUserEdited = true;
+            generateOutputs();
+        });
+
+        if (btnResetPackageSync) {
+            btnResetPackageSync.addEventListener('click', () => {
+                isAppNameUserEdited = false;
+                isPackageUserEdited = false;
+                syncAppNameAndPackage(true);
+                generateOutputs();
+            });
+        }
+
+        [appVersionInput, appOrientationInput, winWidthInput, winHeightInput, winResizableInput, winFullscreenInput, enableLocalStorageInput].forEach(elem => {
+            if (elem) {
+                elem.addEventListener('change', generateOutputs);
+                elem.addEventListener('input', generateOutputs);
+            }
+        });
+
+        document.getElementById('htmlFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    htmlCodeInput.value = evt.target.result;
+                    isAppNameUserEdited = false;
+                    isPackageUserEdited = false;
+                    syncAppNameAndPackage(true);
+                    updatePreview();
+                    generateOutputs();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function setPreviewDevice(device) {
+            activeDevice = device;
+            const btnMobile = document.getElementById('btnDeviceMobile');
+            const btnDesktop = document.getElementById('btnDeviceDesktop');
+            const frameMobile = document.getElementById('frameMobile');
+            const frameDesktop = document.getElementById('frameDesktop');
+            const previewLabel = document.getElementById('previewLabel');
+
+            if (device === 'mobile') {
+                btnMobile.className = "px-2.5 py-1 rounded bg-indigo-600 text-white font-medium flex items-center space-x-1 transition";
+                btnDesktop.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition";
+                frameMobile.classList.remove('hidden');
+                frameDesktop.classList.add('hidden');
+                previewLabel.textContent = "Vista Previa - Android Móvil";
+            } else {
+                btnDesktop.className = "px-2.5 py-1 rounded bg-indigo-600 text-white font-medium flex items-center space-x-1 transition";
+                btnMobile.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium flex items-center space-x-1 transition";
+                frameDesktop.classList.remove('hidden');
+                frameMobile.classList.add('hidden');
+                previewLabel.textContent = "Vista Previa - Windows Desktop";
+            }
+        }
+
+        function updatePreview() {
+            const docMobile = htmlPreviewMobile.contentWindow.document;
+            docMobile.open();
+            docMobile.write(htmlCodeInput.value);
+            docMobile.close();
+
+            const docDesktop = htmlPreviewDesktop.contentWindow.document;
+            docDesktop.open();
+            docDesktop.write(htmlCodeInput.value);
+            docDesktop.close();
+        }
+
+        function generateOutputs() {
+            const name = appNameInput.value || 'MiAppHtml';
+            const safeName = name.replace(/"/g, '\\"');
+            const cleanExeName = name.replace(/[^a-zA-Z0-9]/g, '') || 'MiApp';
+            const pkg = packageNameInput.value || 'org.miejemplo.myapp';
+            const version = appVersionInput.value || '1.0.0';
+            const orientation = appOrientationInput.value || 'portrait';
+            const width = parseInt(winWidthInput.value) || 1024;
+            const height = parseInt(winHeightInput.value) || 720;
+            const resizable = winResizableInput.checked;
+            const fullscreen = winFullscreenInput.checked;
+            const isLocalStorageEnabled = enableLocalStorageInput ? enableLocalStorageInput.checked : true;
+
+            // Gather Permissions
+            let perms = [];
+            if (document.getElementById('permInternet').checked) perms.push('INTERNET');
+            if (document.getElementById('permStorage').checked || isLocalStorageEnabled) {
+                perms.push('READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE');
+            }
+            perms = [...new Set(perms)];
+
+            // 1. Python Multiplatform Script (main.py)
+            generatedPyCode = `# -*- coding: utf-8 -*-
+"""
+Generado automáticamente por HTML to Python, APK & Windows Studio
+Nombre de la App: ${safeName}
+Versión: ${version}
+"""
+
+import os
+import sys
+
+APP_NAME = "${safeName}"
+def get_resource_path(relative_path):
+    """ Obtiene la ruta absoluta para el recurso, compatible con desarrollo y PyInstaller/Buildozer """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+INDEX_PATH = get_resource_path("index.html")
+
+def run_android():
+    from kivy.app import App
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.utils import platform
+    from android.runnable import run_on_ui_thread
+    from android.permissions import request_permissions, Permission
+    from jnius import autoclass, PythonJavaClass, java_method
+
+    WebView = autoclass('android.webkit.WebView')
+    WebViewClient = autoclass('android.webkit.WebViewClient')
+    WebChromeClient = autoclass('android.webkit.WebChromeClient')
+    Activity = autoclass('org.kivy.android.PythonActivity').mActivity
+    Environment = autoclass('android.os.Environment')
+    Base64 = autoclass('android.util.Base64')
+    FileOutputStream = autoclass('java.io.FileOutputStream')
+    File = autoclass('java.io.File')
+    Toast = autoclass('android.widget.Toast')
+
+    class JSDownloadListener(PythonJavaClass):
+        __javainterfaces__ = ['android/webkit/DownloadListener']
+        __javacontext__ = 'app'
+
+        def __init__(self, activity):
+            super(JSDownloadListener, self).__init__()
+            self.activity = activity
+
+        @java_method('(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V')
+        def onDownloadStart(self, url, userAgent, contentDisposition, mimetype, contentLength):
+            try:
+                if url.startswith("data:"):
+                    header, data = url.split(",", 1)
+                    file_bytes = Base64.decode(data, Base64.DEFAULT)
+                    filename = "backup_file.json"
+                    if "filename=" in contentDisposition:
+                        filename = contentDisposition.split("filename=")[1].strip('" ;')
+                    
+                    download_dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    out_file = File(download_dir, filename)
+                    fos = FileOutputStream(out_file)
+                    fos.write(file_bytes)
+                    fos.close()
+
+                    Toast.makeText(self.activity, f"Guardado en Descargas: {filename}", Toast.LENGTH_LONG).show()
+            except Exception as e:
+                print(f"Error procesando descarga: {e}")
+
+    class MainAndroidApp(App):
+        def build(self):
+            self.title = APP_NAME
+            layout = BoxLayout(orientation='vertical')
+            request_permissions([
+                Permission.INTERNET,
+                Permission.READ_EXTERNAL_STORAGE,
+                Permission.WRITE_EXTERNAL_STORAGE
+            ])
+            self.create_webview()
+            return layout
+
+        @run_on_ui_thread
+        def create_webview(self):
+            webview = WebView(Activity)
+            settings = webview.getSettings()
+            settings.setJavaScriptEnabled(True)
+            settings.setDomStorageEnabled(True)
+            settings.setDatabaseEnabled(True)
+            settings.setAllowFileAccess(True)
+            settings.setAllowContentAccess(True)
+            settings.setAllowFileAccessFromFileURLs(True)
+            settings.setAllowUniversalAccessFromFileURLs(True)
+            
+            webview.setWebViewClient(WebViewClient())
+            webview.setWebChromeClient(WebChromeClient())
+            ${isLocalStorageEnabled ? 'webview.setDownloadListener(JSDownloadListener(Activity))' : ''}
+            
+            webview.loadUrl("file://" + INDEX_PATH)
+            Activity.setContentView(webview)
+
+    MainAndroidApp().run()
+
+def run_windows_desktop():
+    try:
+        import webview
+        window = webview.create_window(
+            title=APP_NAME,
+            url="file://" + INDEX_PATH,
+            width=${width},
+            height=${height},
+            resizable=${resizable ? 'True' : 'False'},
+            fullscreen=${fullscreen ? 'True' : 'False'}
+        )
+        webview.start()
+    except ImportError:
+        import webbrowser
+        print("Módulo 'pywebview' no encontrado. Abriendo en navegador predeterminado...")
+        webbrowser.open("file://" + INDEX_PATH)
+
+if __name__ == '__main__':
+    # Detectar Plataforma
+    try:
+        from kivy.utils import platform
+        if platform == 'android':
+            run_android()
+        else:
+            run_windows_desktop()
+    except Exception:
+        run_windows_desktop()
+`;
+
+            // 1.5 Silent Launcher BAT Script (ejecutar_app.bat)
+            generatedLauncherBatCode = `@echo off
+cd /d "%~dp0"
+
+:: Lanzador Silencioso de la Aplicacion en Python (Sin ventana de consola CMD)
+:: 1. Si existe Python Aislado en \\python_env\\
+if exist "python_env\\pythonw.exe" (
+    start "" "python_env\\pythonw.exe" main.py
+    exit
+)
+if exist "python_env\\python.exe" (
+    start "" "python_env\\python.exe" main.py
+    exit
+)
+
+:: 2. Si existe Pythonw en el Sistema (Sin consola)
+pythonw --version >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    start "" pythonw main.py
+    exit
+)
+
+:: 3. Fallback a Python del Sistema
+python --version >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    start "" python main.py
+    exit
+)
+
+echo ============================================================
+echo [ERROR] No se detecto Python en el sistema ni en \\python_env\\.
+echo.
+echo Para solucionarlo:
+echo 1. Instala Python 3 en tu sistema, o
+echo 2. Ejecuta \\python_env\\instalar_python_portatil.bat para descargar
+echo    un Python portable e independiente en esta carpeta.
+echo ============================================================
+pause
+`;
+
+            // 2. Automated Windows BAT Script (compilar_windows.bat)
+            generatedWinBatCode = `@echo off
+setlocal enabledelayedexpansion
+cd /d "%~dp0"
+
+echo ============================================================
+echo   Compilador Automatico a .EXE para Windows: ${safeName}
+echo ============================================================
+echo.
+
+:: 1. Deteccion de Python (Entorno aislado python_env\\ o Sistema)
+set "PYTHON_EXEC="
+
+if exist "python_env\\python.exe" (
+    set "PYTHON_EXEC=python_env\\python.exe"
+    echo [INFO] Usando Python Aislado/Portable localizado en \\python_env\\
+) else if exist "python\\python.exe" (
+    set "PYTHON_EXEC=python\\python.exe"
+    echo [INFO] Usando Python Portable localizado en \\python\\
+) else (
+    python --version >nul 2>&1
+    if !ERRORLEVEL! EQU 0 (
+        set "PYTHON_EXEC=python"
+        echo [INFO] Usando Python instalado en el Sistema.
+    )
+)
+
+if "%PYTHON_EXEC%"=="" (
+    echo [AVISO] No se detecto Python en el sistema ni en \\python_env\\.
+    echo Intentando descargar e instalar automaticamente Python Portable en \\python_env\\...
+    echo.
+    if not exist "python_env" mkdir "python_env"
+    powershell -Command "Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip' -OutFile 'python_env\\python_embed.zip'"
+    if exist "python_env\\python_embed.zip" (
+        powershell -Command "Expand-Archive -Path 'python_env\\python_embed.zip' -DestinationPath 'python_env' -Force"
+        del "python_env\\python_embed.zip"
+        powershell -Command "(Get-Content python_env\\python311._pth) -replace '#import site', 'import site' | Set-Content python_env\\python311._pth"
+        powershell -Command "Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'python_env\\get-pip.py'"
+        python_env\\python.exe python_env\\get-pip.py --no-warn-script-location
+        del "python_env\\get-pip.py"
+        set "PYTHON_EXEC=python_env\\python.exe"
+        echo [EXITO] Entorno Python Portable instalado en \\python_env\\
+    ) else (
+        echo [ERROR] No se pudo descargar Python. Por favor instala Python o ejecuta con conexion a internet.
+        pause
+        exit /b 1
+    )
+)
+
+echo [1/3] Verificando e instalando dependencias requeridas con !PYTHON_EXEC!...
+
+!PYTHON_EXEC! -m PyInstaller --version >nul 2>&1
+if !ERRORLEVEL! NEQ 0 (
+    echo   - Instalando PyInstaller...
+    !PYTHON_EXEC! -m pip install pyinstaller
+) else (
+    echo   - PyInstaller ya esta instalado.
+)
+
+!PYTHON_EXEC! -c "import webview" >nul 2>&1
+if !ERRORLEVEL! NEQ 0 (
+    echo   - Instalando PyWebView...
+    !PYTHON_EXEC! -m pip install pywebview
+) else (
+    echo   - PyWebView ya esta instalado.
+)
+
+!PYTHON_EXEC! -c "import clr" >nul 2>&1
+if !ERRORLEVEL! NEQ 0 (
+    echo   - Instalando pythonnet...
+    !PYTHON_EXEC! -m pip install pythonnet
+) else (
+    echo   - pythonnet ya esta instalado.
+)
+
+echo.
+echo [2/3] Buscando archivo de icono (.ico) en el directorio...
+set "ICON_CMD="
+if exist "icon.ico" (
+    set "ICON_CMD=--icon=icon.ico"
+    echo   - Icono detectado: icon.ico
+    goto :found_icon
+)
+if exist "app.ico" (
+    set "ICON_CMD=--icon=app.ico"
+    echo   - Icono detectado: app.ico
+    goto :found_icon
+)
+for %%i in (*.ico) do (
+    set "ICON_CMD=--icon=%%i"
+    echo   - Icono detectado: %%i
+    goto :found_icon
+)
+echo   - No se detecto archivo .ico. Se usara el icono ejecutable predeterminado.
+:found_icon
+
+echo.
+echo [3/3] Compilando ejecutable .EXE de Windows con PyInstaller...
+!PYTHON_EXEC! -m PyInstaller --noconfirm --onedir --windowed --add-data "index.html;." !ICON_CMD! --name "${cleanExeName}" main.py
+
+if !ERRORLEVEL! NEQ 0 (
+    echo.
+    echo ============================================================
+    echo [ERROR] Ocurrio un fallo durante el proceso de compilacion.
+    echo Revisa los mensajes de error mostrados arriba para corregirlo.
+    echo ============================================================
+    echo.
+    pause
+    exit /b !ERRORLEVEL!
+)
+
+echo.
+echo ============================================================
+echo ¡Compilacion realizada exitosamente!
+echo Tu ejecutable se encuentra en: dist\\${cleanExeName}\\${cleanExeName}.exe
+echo ============================================================
+timeout /t 3 >nul
+exit /b 0
+`;
+
+            // 3. Buildozer spec for Android
+            generatedBuildozerCode = `[app]
+title = ${name}
+package.name = ${name.toLowerCase().replace(/[^a-z0-9]/g, '')}
+package.domain = ${pkg.split('.').slice(0, -1).join('.') || 'org.example'}
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas,html,css,js,json
+icon.filename = %(source.dir)s/icon.png
+version = ${version}
+requirements = python3,kivy,android,pyjnius
+orientation = ${orientation}
+fullscreen = 1
+android.permissions = ${perms.join(',')}
+android.api = 33
+android.minapi = 21
+android.ndk = 25b
+android.archs = arm64-v8a, armeabi-v7a
+
+[buildozer]
+log_level = 2
+warn_on_root = 1
+`;
+
+            // 4. PyInstaller spec for Windows
+            generatedPyinstallerCode = `# -*- mode: python ; coding: utf-8 -*-
+block_cipher = None
+
+a = Analysis(
+    ['main.py'],
+    pathex=[],
+    binaries=[],
+    datas=[('index.html', '.')],
+    hiddenimports=['webview', 'clr'],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='${cleanExeName}',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='${cleanExeName}',
+)
+`;
+
+            // 5. Multi-target GitHub Actions Workflow (.github/workflows/build.yml)
+            generatedGithubScript = `name: Build Android APK and Windows EXE
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: \${{ runner.os }}-buildozer-\${{ hashFiles('buildozer.spec') }}
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev python3-dev openjdk-17-jdk zip unzip
+
+      - name: Install Buildozer & Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
+
+      - name: Build APK
+        run: buildozer -v android debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: bin/*.apk
+
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyInstaller and PyWebView
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pywebview pythonnet
+
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onedir --windowed --add-data "index.html;." --name "${cleanExeName}" main.py
+
+      - name: Upload Windows EXE Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-EXE
+          path: dist/${cleanExeName}/
+`;
+
+            document.getElementById('githubScript').textContent = generatedGithubScript;
+            document.getElementById('winBatDisplayArea').textContent = generatedWinBatCode;
+            updateCodeDisplay();
+        }
+
+        function showCodeView(view) {
+            currentCodeView = view;
+            document.querySelectorAll('.code-view-btn').forEach(btn => {
+                btn.className = "code-view-btn bg-slate-800 text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-md font-medium";
+            });
+            document.getElementById('btnView-' + view).className = "code-view-btn bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-md font-medium";
+            updateCodeDisplay();
+        }
+
+        function updateCodeDisplay() {
+            if (currentCodeView === 'mainPy') {
+                currentFileName.textContent = 'main.py';
+                codeDisplayArea.textContent = generatedPyCode;
+            } else if (currentCodeView === 'launcherBat') {
+                currentFileName.textContent = 'ejecutar_app.bat';
+                codeDisplayArea.textContent = generatedLauncherBatCode;
+            } else if (currentCodeView === 'winBat') {
+                currentFileName.textContent = 'compilar_windows.bat';
+                codeDisplayArea.textContent = generatedWinBatCode;
+            } else if (currentCodeView === 'buildozerSpec') {
+                currentFileName.textContent = 'buildozer.spec';
+                codeDisplayArea.textContent = generatedBuildozerCode;
+            } else if (currentCodeView === 'pyinstallerSpec') {
+                currentFileName.textContent = 'build_win.spec';
+                codeDisplayArea.textContent = generatedPyinstallerCode;
+            }
+        }
+
+        function copyCurrentCode() {
+            navigator.clipboard.writeText(codeDisplayArea.textContent);
+            alert("¡Código copiado al portapapeles!");
+        }
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('aside nav button').forEach(btn => {
+                btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition";
+            });
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-indigo-600 text-white transition";
+            }
+        }
+
+        // Build Methods Switcher
+        function showBuildMethod(methodId) {
+            document.querySelectorAll('.method-panel').forEach(el => el.classList.add('hidden'));
+            document.getElementById(methodId).classList.remove('hidden');
+
+            document.querySelectorAll('.build-method-btn').forEach(btn => {
+                btn.className = "build-method-btn px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:bg-slate-700 transition";
+            });
+
+            const activeBtn = document.getElementById('btn-' + methodId);
+            if (activeBtn) {
+                activeBtn.className = "build-method-btn px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition";
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert("¡Copiado al portapapeles!");
+        }
+
+        document.getElementById('btnDownloadZip').addEventListener('click', () => {
+            const zip = new JSZip();
+            const appName = appNameInput.value || 'MiAppHtml';
+
+            // Archivos principales
+            zip.file("index.html", htmlCodeInput.value);
+            zip.file("main.py", generatedPyCode);
+            zip.file("ejecutar_app.bat", generatedLauncherBatCode);
+            zip.file("compilar_windows.bat", generatedWinBatCode);
+            zip.file("buildozer.spec", generatedBuildozerCode);
+            zip.file("build_win.spec", generatedPyinstallerCode);
+            
+            // Entorno Python en carpeta independiente
+            const pythonFolder = zip.folder("python_env");
+            pythonFolder.file("README_python.txt", `Carpeta reservada para Entorno de Python Aislado (Portable)
+
+Si deseas utilizar una versión de Python independiente y aislada del sistema:
+1. Puedes colocar los archivos de Python Portable (ej. python.exe y DLLs) directamente dentro de esta carpeta 'python_env'.
+2. O puedes hacer doble clic en 'instalar_python_portatil.bat' para descargar e instalar automáticamente un entorno de Python Portable 3.11 en esta carpeta.
+3. Los scripts 'ejecutar_app.bat' y 'compilar_windows.bat' priorizarán automáticamente el ejecutable 'python_env\\python.exe' / 'pythonw.exe' antes que el Python global del sistema.
+
+Para ejecutar la app directamente sin empaquetar a .EXE usando esta carpeta:
+   Simplemente haz doble clic en 'ejecutar_app.bat'.
+`);
+
+            pythonFolder.file("instalar_python_portatil.bat", `@echo off
+cd /d "%~dp0.."
+echo ============================================================
+echo   Instalador de Entorno Python Portable (python_env)
+echo ============================================================
+echo.
+echo Descargando e instalando Python 3.11 Embeddable en \\python_env\\...
+if not exist "python_env" mkdir "python_env"
+powershell -Command "Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip' -OutFile 'python_env\\python_embed.zip'"
+if exist "python_env\\python_embed.zip" (
+    powershell -Command "Expand-Archive -Path 'python_env\\python_embed.zip' -DestinationPath 'python_env' -Force"
+    del "python_env\\python_embed.zip"
+    powershell -Command "(Get-Content python_env\\python311._pth) -replace '#import site', 'import site' | Set-Content python_env\\python311._pth"
+    echo Descargando PIP para el entorno aislado...
+    powershell -Command "Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'python_env\\get-pip.py'"
+    python_env\\python.exe python_env\\get-pip.py --no-warn-script-location
+    del "python_env\\get-pip.py"
+    echo Instalando pywebview...
+    python_env\\python.exe -m pip install pywebview pythonnet
+    echo.
+    echo ============================================================
+    echo ¡Entorno Python Portable configurado exitosamente en \\python_env\\!
+    echo Para ejecutar la app directamente sin compilar usa:
+    echo   ejecutar_app.bat
+    echo ============================================================
+) else (
+    echo [ERROR] No se pudo descargar Python. Revisa tu conexion a internet.
+)
+pause
+`);
+
+            // Workflow de GitHub Actions
+            zip.file(".github/workflows/build.yml", generatedGithubScript);
+
+            // README explicativo
+            const readmeContent = `# ${appName} - Proyecto Multiplataforma (Android & Windows)
+
+Este proyecto ha sido generado automáticamente por **HTML to Python, APK & Windows Studio**.
+
+## 🐍 ¿Cómo ejecutar la app directamente en Python (Sin compilar a .EXE)?
+
+### Opción A: Ejecución rápida de 1-Clic sin ventana de consola (Recomendado)
+Simplemente haz **doble clic en \`ejecutar_app.bat\`**.
+- Utiliza \`pythonw.exe\` en segundo plano, por lo que **no se abrirá ninguna ventana negra de CMD**.
+- La aplicación se abre directamente como si fuera un programa nativo.
+- Cuando cierres la ventana de la app, el proceso finaliza por completo.
+
+### Opción B: Usando el entorno de Python aislado/portátil (\`python_env\`)
+1. Si no tienes Python en tu sistema, entra a la carpeta \`python_env\\\` y ejecuta \`instalar_python_portatil.bat\` (descargará Python 3.11 e instalará sus librerías de forma aislada).
+2. Haz doble clic en \`ejecutar_app.bat\`, detectará automáticamente la versión de \`python_env\\\`.
+
+---
+
+## 💻 Compilación Local en Windows en 1-Clic (.EXE)
+1. Descomprime este archivo \`.zip\` en tu computadora.
+2. *(Opcional)* Si deseas un ícono personalizado, coloca tu archivo \`.ico\` en esta misma carpeta (ejemplo: \`icon.ico\` o \`app.ico\`).
+3. Haz **doble clic en \`compilar_windows.bat\`**.
+4. El script detectará automáticamente si usas \`python_env\\python.exe\` o el Python global, instalará las librerías necesarias y dejará tu ejecutable \`.exe\` dentro de la carpeta \`/dist/\`.
+
+---
+
+## 🎨 Íconos Personalizados de la Aplicación
+
+- **Para Windows (.EXE):** Coloca tu imagen en formato \`.ico\` (ejemplo: \`icon.ico\`) en la carpeta raíz. \`compilar_windows.bat\` lo asignará automáticamente al archivo ejecutable.
+- **Para Android (.APK):** Coloca tu imagen en formato \`.png\` (512x512px recomendado) nombrada \`icon.png\` en la carpeta raíz del proyecto antes de subir a GitHub o compilar.
+
+---
+
+## 🚀 Compilación Automática de Android (.APK) en la Nube
+1. Subes todo el contenido descomprimido de este ZIP a un repositorio en **GitHub**.
+2. Ve a la pestaña **Actions** en tu repositorio de GitHub.
+3. El flujo de trabajo compilará automáticamente en paralelo:
+   - **Android-APK** (mediante Ubuntu + Buildozer)
+   - **Windows-EXE** (mediante Windows + PyInstaller)
+4. Descarga tus ejecutables instalables directamente desde la sección de artefactos de GitHub.
+`;
+            zip.file("README.md", readmeContent);
+
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(content);
+                a.download = `${appName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_multiplatform_project.zip`;
+                a.click();
+            });
+        });
+    </script>
+</body>
+</html>
