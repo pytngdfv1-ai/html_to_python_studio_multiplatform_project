@@ -318,8 +318,8 @@
                                 <p class="text-[11px] text-slate-300">Presiona arriba en <b>"Descargar Proyecto Multiplataforma (.zip)"</b>. Incluye el script en `.github/workflows/build.yml`.</p>
                             </div>
                             <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-1">
-                                <span class="text-indigo-400 font-bold text-xs">2. Subir a GitHub</span>
-                                <p class="text-[11px] text-slate-300">Descomprime el archivo `.zip` y súbelo a un repositorio público o privado en tu cuenta de GitHub.</p>
+                                <span class="text-indigo-400 font-bold text-xs">2. Subir a GitHub (En la RAÍZ)</span>
+                                <p class="text-[11px] text-slate-300">Descomprime el ZIP y sube el contenido <b>directamente en la raíz del repositorio</b> (los archivos <code class="text-amber-300">buildozer.spec</code> y <code class="text-amber-300">main.py</code> no deben quedar en una subcarpeta).</p>
                             </div>
                             <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-1">
                                 <span class="text-indigo-400 font-bold text-xs">3. Obtener APK y EXE</span>
@@ -387,8 +387,8 @@ sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pk
 # 2. Instalar Buildozer y Cython
 pip3 install --user --upgrade buildozer cython
 
-# 3. Compilar APK
-buildozer -v android debug
+# 3. Compilar APK (Aceptando licencias del SDK automaticamente)
+yes | buildozer -v android debug
 </pre>
                     </div>
                 </div>
@@ -948,6 +948,7 @@ requirements = python3,kivy,android,pyjnius
 orientation = ${orientation}
 fullscreen = 1
 android.permissions = ${perms.join(',')}
+android.accept_sdk_licence = True
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
@@ -1048,7 +1049,10 @@ jobs:
           pip install buildozer cython
 
       - name: Build APK
-        run: buildozer -v android debug
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -1221,6 +1225,12 @@ pause
             const readmeContent = `# ${appName} - Proyecto Multiplataforma (Android & Windows)
 
 Este proyecto ha sido generado automáticamente por **HTML to Python, APK & Windows Studio**.
+
+⚠️ **IMPORTANTE AL SUBIR A GITHUB**:
+Asegúrate de copiar todos los archivos del ZIP **directamente en la raíz de tu repositorio** en GitHub.
+Archivos clave como \`buildozer.spec\`, \`main.py\` e \`index.html\` **NO deben quedar metidos dentro de una subcarpeta**, de lo contrario GitHub Actions fallará con el error *"No buildozer.spec found"*.
+
+---
 
 ## 🐍 ¿Cómo ejecutar la app directamente en Python (Sin compilar a .EXE)?
 
