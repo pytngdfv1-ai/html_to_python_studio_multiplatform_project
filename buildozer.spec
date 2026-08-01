@@ -10,6 +10,7 @@ requirements = python3,kivy,android,pyjnius
 orientation = portrait
 fullscreen = 1
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.accept_sdk_licence = True
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
