@@ -387,8 +387,8 @@ sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pk
 # 2. Instalar Buildozer y Cython (Cython < 3.0 para compatibilidad con p4a)
 pip3 install --user --upgrade "cython<3.0.0" buildozer
 
-# 3. Compilar APK (Aceptando licencias del SDK automáticamente)
-yes | buildozer -v android debug
+# 3. Compilar APK (Las licencias se aceptan automáticamente vía buildozer.spec)
+buildozer -v android debug
 </pre>
                     </div>
                 </div>
@@ -1058,10 +1058,11 @@ jobs:
       - name: Build APK
         env:
           ACCEPT_SDK_LICENCE: 'true'
+          APP_ANDROID_ACCEPT_SDK_LICENCE: '1'
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          yes | buildozer -v android debug
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
