@@ -24,10 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Solución para el Exit Code 1 por falta de memoria RAM durante la compilación
+      # Solución robusta para el Swap evitando conflictos de archivos ocupados
       - name: Set up Swap Space
         run: |
-          sudo fallocate -l 4G /swapfile
+          sudo swapoff /swapfile || true
+          sudo rm -f /swapfile
+          sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
