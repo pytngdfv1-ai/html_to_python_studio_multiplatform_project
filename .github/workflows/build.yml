@@ -44,14 +44,7 @@ jobs:
 
       - name: Build APK
         run: |
-          set +o pipefail
-          # Se permite ignorar el código de salida de 'yes' por el Broken pipe,
-          # y se valida la existencia del APK compilado.
-          yes | buildozer -v android debug || true
-          if [ -z "$(ls bin/*.apk 2>/dev/null)" ]; then
-            echo "Error: No se encontró el APK generado."
-            exit 1
-          fi
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
