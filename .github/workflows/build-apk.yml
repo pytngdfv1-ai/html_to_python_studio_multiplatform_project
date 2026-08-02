@@ -45,10 +45,11 @@ jobs:
       - name: Build APK
         env:
           ACCEPT_SDK_LICENCE: 'true'
+          APP_ANDROID_ACCEPT_SDK_LICENCE: '1'
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          yes | buildozer -v android debug
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
