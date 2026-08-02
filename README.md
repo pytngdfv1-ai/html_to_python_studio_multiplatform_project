@@ -2,6 +2,12 @@
 
 Este proyecto ha sido generado automáticamente por **HTML to Python, APK & Windows Studio**.
 
+⚠️ **IMPORTANTE AL SUBIR A GITHUB**:
+Asegúrate de copiar todos los archivos del ZIP **directamente en la raíz de tu repositorio** en GitHub.
+Archivos clave como `buildozer.spec`, `main.py` e `index.html` **NO deben quedar metidos dentro de una subcarpeta**, de lo contrario GitHub Actions fallará con el error *"No buildozer.spec found"*.
+
+---
+
 ## 🐍 ¿Cómo ejecutar la app directamente en Python (Sin compilar a .EXE)?
 
 ### Opción A: Ejecución rápida de 1-Clic sin ventana de consola (Recomendado)
