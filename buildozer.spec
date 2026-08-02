@@ -12,9 +12,10 @@ fullscreen = 1
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 android.accept_sdk_licence = True
 android.api = 33
+android.build_tools_version = 34.0.0
 android.minapi = 21
 android.ndk = 25b
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 [buildozer]
 log_level = 2
