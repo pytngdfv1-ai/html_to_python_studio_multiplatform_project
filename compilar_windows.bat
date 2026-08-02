@@ -7,7 +7,6 @@ echo   Compilador Automatico a .EXE para Windows: HTML to Python Studio
 echo ============================================================
 echo.
 
-:: 1. Deteccion de Python (Entorno aislado python_env\ o Sistema)
 set "PYTHON_EXEC="
 
 if exist "python_env\python.exe" (

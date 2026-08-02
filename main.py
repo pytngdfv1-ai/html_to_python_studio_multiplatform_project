@@ -114,7 +114,6 @@ def run_windows_desktop():
         webbrowser.open("file://" + INDEX_PATH)
 
 if __name__ == '__main__':
-    # Detectar Plataforma
     try:
         from kivy.utils import platform
         if platform == 'android':

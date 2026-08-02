@@ -6,7 +6,7 @@
     <title>HTML to Python Studio</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CSS (Íconos 100% seguros sin JavaScript/ESM) -->
+    <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- JSZip CDN para descargar paquetes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -303,7 +303,7 @@
                     </button>
                 </div>
 
-                <!-- Method 1: GitHub Actions (Supports Both APK and EXE) -->
+                <!-- Method 1: GitHub Actions -->
                 <div id="method-actions" class="method-panel space-y-4">
                     <div class="bg-indigo-950/40 border border-indigo-800/60 p-4 rounded-xl text-xs space-y-3">
                         <div class="flex items-center justify-between">
@@ -340,7 +340,7 @@
                     </div>
                 </div>
 
-                <!-- Method 2: Local Windows EXE with Automated BAT -->
+                <!-- Method 2: Local Windows EXE -->
                 <div id="method-windows-local" class="method-panel hidden space-y-4">
                     <div class="bg-slate-800/60 border border-slate-700 p-4 rounded-xl text-xs space-y-2">
                         <h3 class="font-semibold text-white text-sm">Compilación Local Automática en Windows (.EXE) en 1-Clic</h3>
@@ -387,8 +387,9 @@ sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pk
 # 2. Instalar Buildozer y Cython (Cython < 3.0 para compatibilidad con p4a)
 pip3 install --user --upgrade "cython<3.0.0" buildozer
 
-# 3. Compilar APK (Las licencias se aceptan automáticamente vía 'yes')
-yes | buildozer -v android debug
+# 3. Aceptar licencias del SDK de Android e iniciar compilación
+mkdir -p ~/.android && touch ~/.android/repositories.cfg
+buildozer -v android debug
 </pre>
                     </div>
                 </div>
@@ -477,7 +478,7 @@ yes | buildozer -v android debug
         const desktopWindowTitle = document.getElementById('desktopWindowTitle');
 
         // Active State
-        let currentCodeView = 'mainPy'; // mainPy | launcherBat | winBat | buildozerSpec | pyinstallerSpec
+        let currentCodeView = 'mainPy';
         let activeDevice = 'mobile';
         let isAppNameUserEdited = false;
         let isPackageUserEdited = false;
@@ -764,7 +765,6 @@ def run_windows_desktop():
         webbrowser.open("file://" + INDEX_PATH)
 
 if __name__ == '__main__':
-    # Detectar Plataforma
     try:
         from kivy.utils import platform
         if platform == 'android':
@@ -775,12 +775,10 @@ if __name__ == '__main__':
         run_windows_desktop()
 `;
 
-            // 1.5 Silent Launcher BAT Script (ejecutar_app.bat)
+            // 1.5 Silent Launcher BAT Script
             generatedLauncherBatCode = `@echo off
 cd /d "%~dp0"
 
-:: Lanzador Silencioso de la Aplicacion en Python (Sin ventana de consola CMD)
-:: 1. Si existe Python Aislado en \\python_env\\
 if exist "python_env\\pythonw.exe" (
     start "" "python_env\\pythonw.exe" main.py
     exit
@@ -790,14 +788,12 @@ if exist "python_env\\python.exe" (
     exit
 )
 
-:: 2. Si existe Pythonw en el Sistema (Sin consola)
 pythonw --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     start "" pythonw main.py
     exit
 )
 
-:: 3. Fallback a Python del Sistema
 python --version >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     start "" python main.py
@@ -815,7 +811,7 @@ echo ============================================================
 pause
 `;
 
-            // 2. Automated Windows BAT Script (compilar_windows.bat)
+            // 2. Automated Windows BAT Script
             generatedWinBatCode = `@echo off
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
@@ -825,7 +821,6 @@ echo   Compilador Automatico a .EXE para Windows: ${safeName}
 echo ============================================================
 echo.
 
-:: 1. Deteccion de Python (Entorno aislado python_env\\ o Sistema)
 set "PYTHON_EXEC="
 
 if exist "python_env\\python.exe" (
@@ -942,7 +937,7 @@ package.name = ${name.toLowerCase().replace(/[^a-z0-9]/g, '')}
 package.domain = ${pkg.split('.').slice(0, -1).join('.') || 'org.example'}
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,html,css,js,json
-icon.filename = %(source.dir)s/icon.png
+# icon.filename = %(source.dir)s/icon.png
 version = ${version}
 requirements = python3,kivy,android,pyjnius
 orientation = ${orientation}
@@ -1055,14 +1050,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "cython<3.0.0" buildozer
 
-      - name: Build APK
-        env:
-          ACCEPT_SDK_LICENCE: 'true'
-          APP_ANDROID_ACCEPT_SDK_LICENCE: '1'
+      - name: Accept Android SDK Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          yes | buildozer -v android debug
+          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          fi
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          if [ -d "$ANDROID_HOME/licenses" ]; then
+            cp -r $ANDROID_HOME/licenses/* ~/.buildozer/android/platform/android-sdk/licenses/ 2>/dev/null || true
+          fi
+
+      - name: Build APK
+        run: |
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -1250,24 +1252,13 @@ Simplemente haz **doble clic en \`ejecutar_app.bat\`**.
 - La aplicación se abre directamente como si fuera un programa nativo.
 - Cuando cierres la ventana de la app, el proceso finaliza por completo.
 
-### Opción B: Usando el entorno de Python aislado/portátil (\`python_env\`)
-1. Si no tienes Python en tu sistema, entra a la carpeta \`python_env\\\` y ejecuta \`instalar_python_portatil.bat\` (descargará Python 3.11 e instalará sus librerías de forma aislada).
-2. Haz doble clic en \`ejecutar_app.bat\`, detectará automáticamente la versión de \`python_env\\\`.
-
 ---
 
 ## 💻 Compilación Local en Windows en 1-Clic (.EXE)
 1. Descomprime este archivo \`.zip\` en tu computadora.
 2. *(Opcional)* Si deseas un ícono personalizado, coloca tu archivo \`.ico\` en esta misma carpeta (ejemplo: \`icon.ico\` o \`app.ico\`).
 3. Haz **doble clic en \`compilar_windows.bat\`**.
-4. El script detectará automáticamente si usas \`python_env\\python.exe\` o el Python global, instalará las librerías necesarias y dejará tu ejecutable \`.exe\` dentro de la carpeta \`/dist/\`.
-
----
-
-## 🎨 Íconos Personalizados de la Aplicación
-
-- **Para Windows (.EXE):** Coloca tu imagen en formato \`.ico\` (ejemplo: \`icon.ico\`) en la carpeta raíz. \`compilar_windows.bat\` lo asignará automáticamente al archivo ejecutable.
-- **Para Android (.APK):** Coloca tu imagen en formato \`.png\` (512x512px recomendado) nombrada \`icon.png\` en la carpeta raíz del proyecto antes de subir a GitHub o compilar.
+4. El script detectará automáticamente las librerías necesarias y dejará tu ejecutable \`.exe\` dentro de la carpeta \`/dist/\`.
 
 ---
 
