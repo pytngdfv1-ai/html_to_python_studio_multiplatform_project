@@ -380,14 +380,14 @@
 
                     <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
                         <pre id="wslScript" class="font-mono text-xs text-emerald-400 bg-slate-900 p-4 rounded-lg overflow-x-auto">
-# 1. Instalar dependencias del sistema
+# 1. Instalar dependencias del sistema (Compatible con Ubuntu 22.04 y 24.04 Noble)
 sudo apt update
-sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev lld
 
-# 2. Instalar Buildozer y Cython
-pip3 install --user --upgrade buildozer cython
+# 2. Instalar Buildozer y Cython (Cython < 3.0 para compatibilidad con p4a)
+pip3 install --user --upgrade "cython<3.0.0" buildozer
 
-# 3. Compilar APK (Aceptando licencias del SDK automaticamente)
+# 3. Compilar APK (Aceptando licencias del SDK automáticamente)
 yes | buildozer -v android debug
 </pre>
                     </div>
@@ -950,9 +950,10 @@ fullscreen = 1
 android.permissions = ${perms.join(',')}
 android.accept_sdk_licence = True
 android.api = 33
+android.build_tools_version = 34.0.0
 android.minapi = 21
 android.ndk = 25b
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 [buildozer]
 log_level = 2
@@ -1030,6 +1031,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
@@ -1041,14 +1048,16 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev python3-dev openjdk-17-jdk zip unzip
+          sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev python3-dev openjdk-17-jdk zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake lld
 
       - name: Install Buildozer & Cython
         run: |
-          pip install --upgrade pip
-          pip install buildozer cython
+          python -m pip install --upgrade pip
+          python -m pip install "cython<3.0.0" buildozer
 
       - name: Build APK
+        env:
+          ACCEPT_SDK_LICENCE: 'true'
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
