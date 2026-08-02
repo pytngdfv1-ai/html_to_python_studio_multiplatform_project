@@ -24,6 +24,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Solución para el Exit Code 1 por falta de memoria RAM durante la compilación
+      - name: Set up Swap Space
+        run: |
+          sudo fallocate -l 4G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
