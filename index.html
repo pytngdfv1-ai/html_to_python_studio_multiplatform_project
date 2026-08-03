@@ -1059,6 +1059,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "cython<3.0.0" buildozer
 
+      - name: Accept Android SDK Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          # Aceptar licencias de forma explícita sin el comando 'yes' para evitar Broken Pipe
+          yes | sdkmanager --licenses || true
+
       - name: Build APK
         run: |
           buildozer -v android debug
