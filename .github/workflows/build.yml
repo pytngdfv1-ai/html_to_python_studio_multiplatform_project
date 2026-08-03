@@ -45,15 +45,22 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install buildozer cython
 
-      - name: Accept Android SDK Licenses
+      - name: Prepare Android SDK & Accept Licenses
         run: |
-          # Las licencias se escriben directamente en el SDK que usará buildozer
-          # (~/.buildozer/android/platform/android-sdk), NO en el SDK del sistema
-          # del runner. Usar 'sdkmanager --licenses' contra el SDK del sistema
-          # no sirve de nada porque buildozer descarga y usa su propio SDK.
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          printf "84831b9409646a918e30573bab4c9c91346d8abd\n" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          # Se descargan las cmdline-tools reales de Android directamente en la
+          # ruta que usará buildozer (~/.buildozer/android/platform/android-sdk).
+          # Escribir manualmente los hashes de licencia SIN que el sdkmanager real
+          # exista ahí hace que buildozer detecte la carpeta "android-sdk" como ya
+          # instalada y se salte su propia descarga del SDK, dejando sdkmanager
+          # inexistente. Por eso se descarga primero la herramienta real.
+          export ANDROID_SDK_ROOT="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -sSL -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q cmdline-tools.zip
+          rm cmdline-tools.zip
+          mv cmdline-tools latest
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses > /dev/null || true
 
       - name: Build APK
         run: |
