@@ -303,6 +303,15 @@
                     </button>
                 </div>
 
+                <!-- NEW: Configuración de GitHub Actions -->
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mt-4">
+                    <label class="block text-xs font-medium text-slate-300 mb-2">Modo de GitHub Actions:</label>
+                    <select id="githubMode" onchange="generateOutputs()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
+                        <option value="both">Android APK + Windows EXE (Completo)</option>
+                        <option value="android_only">Solo Android APK</option>
+                    </select>
+                </div>
+
                 <!-- Method 1: GitHub Actions -->
                 <div id="method-actions" class="method-panel space-y-4">
                     <div class="bg-indigo-950/40 border border-indigo-800/60 p-4 rounded-xl text-xs space-y-3">
@@ -387,9 +396,8 @@ sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pk
 # 2. Instalar Buildozer y Cython
 pip3 install --user --upgrade "cython<3.0.0" buildozer
 
-# 3. Compilar APK aceptando licencias de forma no interactiva
-set +o pipefail
-yes | buildozer -v android debug
+# 3. Compilar APK
+buildozer -v android debug
 </pre>
                     </div>
                 </div>
@@ -639,6 +647,7 @@ yes | buildozer -v android debug
             const resizable = winResizableInput.checked;
             const fullscreen = winFullscreenInput.checked;
             const isLocalStorageEnabled = enableLocalStorageInput ? enableLocalStorageInput.checked : true;
+            const ghMode = document.getElementById('githubMode').value; // Nueva configuración
 
             // Gather Permissions
             let perms = [];
@@ -1006,7 +1015,7 @@ coll = COLLECT(
 `;
 
             // 5. Multi-target GitHub Actions Workflow (.github/workflows/build.yml)
-            generatedGithubScript = `name: Build Android APK and Windows EXE
+            generatedGithubScript = `name: Build ${ghMode === 'android_only' ? 'Android APK' : 'Android APK and Windows EXE'}
 
 on:
   push:
@@ -1052,8 +1061,7 @@ jobs:
 
       - name: Build APK
         run: |
-          set +o pipefail
-          yes | buildozer -v android debug
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -1061,6 +1069,7 @@ jobs:
           name: Android-APK
           path: bin/*.apk
 
+${ghMode === 'both' ? `
   build-windows:
     name: Build Windows EXE
     runs-on: windows-latest
@@ -1087,6 +1096,7 @@ jobs:
         with:
           name: Windows-EXE
           path: dist/${cleanExeName}/
+` : ''}
 `;
 
             document.getElementById('githubScript').textContent = generatedGithubScript;
