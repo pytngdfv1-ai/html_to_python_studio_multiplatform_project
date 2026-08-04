@@ -1078,6 +1078,12 @@ jobs:
           rm cmdline-tools.zip
           mv cmdline-tools latest
           yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses > /dev/null || true
+          # Buildozer (la versión instalada vía pip) solo reconoce la ruta legacy
+          # "tools/bin/sdkmanager" como indicador de que el SDK ya está instalado.
+          # Sin esto, ignora las cmdline-tools modernas que ya descargamos y falla
+          # con "sdkmanager is not installed" aunque sí exista en cmdline-tools/latest.
+          mkdir -p "$ANDROID_SDK_ROOT/tools/bin"
+          ln -sf "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
 
       - name: Build APK
         run: |
